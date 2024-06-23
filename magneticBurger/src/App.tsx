@@ -92,12 +92,8 @@ function App() {
     } else {
       pointerCoords.x.set(clientX - POINTER_SIZE / 2);
       pointerCoords.y.set(clientY - POINTER_SIZE / 2);
-      if (!pointerRef.current) return;
-      animate(
-        pointerRef.current,
-        { scaleX: 1, scaleY: 1 },
-        { duration: 0, type: "spring" },
-      );
+      pointerScale.x.set(1);
+      pointerScale.y.set(1);
     }
   }
 
