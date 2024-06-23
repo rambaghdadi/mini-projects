@@ -1,0 +1,68 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: system-ui, sans-serif;
+  color: black;
+  background-color: #4b0049;
+}
+
+h1 {
+  font-weight: 800;
+  font-size: 1.5rem;
+}
+
+.glow {
+  position: fixed;
+  width: 0;
+  height: 0;
+  border-radius: 100%;
+  box-shadow: 0 0 1rem 10px rgb(191, 0, 255);
+}
+
+
+.star1 {
+  animation: star1Animation 1.8s forwards 0s;
+  transform-origin: center center;
+  scale: 0.8;
+}
+
+.star2 {
+  animation: star2Animation 1.8s forwards 0s;
+  transform-origin: center center;
+  scale: 0.5;
+}
+
+.star3 {
+  animation: star3Animation 1.8s forwards 0s;
+  transform-origin: center center;
+  scale: 0.7;
+}
+
+
+@keyframes star1Animation {
+  to {
+    transform: translateY(600%) rotateY(180deg);
+    opacity: 0;
+  }
+}
+
+@keyframes star2Animation {
+  20% {
+    transform: translateY(-100%) rotateX(-180deg);
+  }
+  100% {
+    transform: translateY(1000%) rotateX(-180deg);
+    opacity: 0;
+  }
+}
+
+@keyframes star3Animation {
+  to {
+    transform: translateY(1000%) rotate(90deg);
+    opacity: 0;
+  }
+}
