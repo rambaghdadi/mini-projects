@@ -1,0 +1,29 @@
+.header {
+  padding: 3rem;
+  display: flex;
+  justify-content: end;
+  mix-blend-mode: difference;
+  display: flex;
+  pointer-events: none;
+}
+
+
+.iconContainer {
+  position: relative;
+
+
+  &>div {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 100%;
+    pointer-events: all;
+  }
+
+  &:hover {
+    &>div {
+      transform: scale(10);
+    }
+  }
+}
