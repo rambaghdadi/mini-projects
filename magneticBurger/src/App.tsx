@@ -23,7 +23,6 @@ function App() {
     y: useMotionValue(1),
   };
 
-  console.log("comment");
   const options = { damping: 20, stiffness: 300, mass: 0.5 };
   const animatedPointer = {
     x: useSpring(pointerCoords.x, options),
