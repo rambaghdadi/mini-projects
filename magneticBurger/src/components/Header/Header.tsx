@@ -10,8 +10,8 @@ export const Header = forwardRef(function index(
   return (
     <header className={classes.header}>
       <Magnetic>
-        <div className={classes.iconContainer} ref={ref}>
-          <div />
+        <div className={classes.iconContainer}>
+          <div ref={ref} />
           <IconMenu />
         </div>
       </Magnetic>

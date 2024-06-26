@@ -1,66 +1,23 @@
 import { useEffect, useRef, useState } from "react";
 import { Header } from "./components/Header/Header";
-import {
-  motion,
-  useMotionValue,
-  useSpring,
-  transform,
-  animate,
-} from "framer-motion";
+import { useCursorLocation } from "./hooks/useCursorLocation";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
+import { transform } from "./utils/utils";
 
 function App() {
+  const { x, y } = useCursorLocation();
+
   const pointerRef = useRef<HTMLDivElement>(null);
   const burgerRef = useRef<HTMLDivElement>(null);
+  const maskRef = useRef<HTMLDivElement>(null);
+  const mainSectionRef = useRef<HTMLDivElement>(null);
 
   const [isBurgerHovered, setIsBurgerHovered] = useState(false);
+  const [isTextHovered, setIsTextHovered] = useState(false);
+
   const POINTER_SIZE = isBurgerHovered ? 60 : 14;
-  const pointerCoords = {
-    x: useMotionValue(0),
-    y: useMotionValue(0),
-  };
-  const pointerScale = {
-    x: useMotionValue(1),
-    y: useMotionValue(1),
-  };
-
-  const options = { damping: 20, stiffness: 300, mass: 0.5 };
-  const animatedPointer = {
-    x: useSpring(pointerCoords.x, options),
-    y: useSpring(pointerCoords.y, options),
-  };
-
-  function rotatePointer(distance: { y: number; x: number }) {
-    const angle = Math.atan2(distance.y, distance.x);
-    if (!pointerRef.current) return;
-    animate(pointerRef.current, { rotate: `${angle}rad` }, { duration: 0 });
-  }
-
-  function scalePointer(
-    distance: { y: number; x: number },
-    burgerCoords: { height: number; width: number },
-  ) {
-    const absDistance = Math.max(Math.abs(distance.x), Math.abs(distance.y));
-    const newScaleX = transform(
-      absDistance,
-      [0, burgerCoords.height / 2 + 80],
-      [1, 1.2],
-    );
-    const newScaleY = transform(
-      absDistance,
-      [0, burgerCoords.width / 2 + 80],
-      [1, 0.8],
-    );
-    pointerScale.x.set(newScaleX);
-    pointerScale.y.set(newScaleY);
-  }
-
-  function movePointer(
-    distance: { y: number; x: number },
-    burgerCoords: { x: number; y: number },
-  ) {
-    pointerCoords.x.set(burgerCoords.x - POINTER_SIZE / 2 + distance.x * 0.1);
-    pointerCoords.y.set(burgerCoords.y - POINTER_SIZE / 2 + distance.y * 0.1);
-  }
+  const MASK_SIZE = isTextHovered ? 400 : 0;
 
   function getBurgerCoords() {
     const burgerElement = burgerRef.current as HTMLDivElement;
@@ -73,39 +30,12 @@ function App() {
     };
   }
 
-  function updateMouseCoords(e: MouseEvent) {
-    const { clientX, clientY } = e;
-    pointerCoords.x.set(clientX - POINTER_SIZE / 2);
-    pointerCoords.y.set(clientY - POINTER_SIZE / 2);
-
-    const burgerCoords = getBurgerCoords();
-
-    if (isBurgerHovered) {
-      const distanceDiff = {
-        x: clientX - burgerCoords.x,
-        y: clientY - burgerCoords.y,
-      };
-
-      rotatePointer(distanceDiff);
-      scalePointer(distanceDiff, burgerCoords);
-      movePointer(distanceDiff, burgerCoords);
-    } else {
-      pointerCoords.x.set(clientX - POINTER_SIZE / 2);
-      pointerCoords.y.set(clientY - POINTER_SIZE / 2);
-      pointerScale.x.set(1);
-      pointerScale.y.set(1);
-    }
-  }
-
   useEffect(() => {
     const burgerElement = burgerRef.current as HTMLDivElement;
-
     burgerElement.addEventListener("mouseenter", onMouseEnterBurger);
     burgerElement.addEventListener("mouseleave", onMouseLeaveBurger);
-    window.addEventListener("mousemove", updateMouseCoords);
 
     return () => {
-      window.removeEventListener("mousemove", updateMouseCoords);
       burgerElement.removeEventListener("mouseenter", onMouseEnterBurger);
       burgerElement.removeEventListener("mouseleave", onMouseLeaveBurger);
     };
@@ -119,38 +49,86 @@ function App() {
     setIsBurgerHovered(false);
   }
 
-  const template = ({
-    rotate,
-    scaleX,
-    scaleY,
-  }: {
-    rotate: string;
-    scaleX: string;
-    scaleY: string;
-  }) => {
-    return `rotate(${rotate}) scaleX(${scaleX}) scaleY(${scaleY})`;
-  };
+  useGSAP(
+    () => {
+      let xP = x - POINTER_SIZE / 2;
+      let yP = y - POINTER_SIZE / 2;
+      let scaleX = 1;
+      let scaleY = 1;
+      let angle = 0;
+
+      if (isBurgerHovered) {
+        const { x: burgerX, y: burgerY, width, height } = getBurgerCoords();
+        const distanceDiff = { x: x - burgerX, y: y - burgerY };
+        angle = Math.atan2(distanceDiff.y, distanceDiff.x);
+        const absDistance = Math.max(
+          Math.abs(distanceDiff.x),
+          Math.abs(distanceDiff.y),
+        );
+        scaleX = transform(absDistance, [0, height / 2], [1, 1.2]);
+        scaleY = transform(absDistance, [0, width / 2], [1, 0.8]);
+        xP = burgerX - POINTER_SIZE / 2 + distanceDiff.x * 0.1;
+        yP = burgerY - POINTER_SIZE / 2 + distanceDiff.y * 0.1;
+      }
+
+      gsap.to(pointerRef.current, {
+        x: xP,
+        y: yP,
+        scaleX,
+        scaleY,
+        rotate: `${angle}rad`,
+        width: POINTER_SIZE,
+        height: POINTER_SIZE,
+        duration: 0.5,
+        ease: "expo",
+      });
+    },
+    { scope: pointerRef, dependencies: [x, y] },
+  );
+
+  useGSAP(
+    () => {
+      const mainElement = mainSectionRef?.current;
+      const topOffset = mainElement?.getBoundingClientRect().top ?? 0;
+
+      gsap.to(maskRef.current, {
+        webkitMaskPosition: `${x - MASK_SIZE / 2}px ${y - topOffset - MASK_SIZE / 2}px`,
+        duration: 0.5,
+        ease: "expo",
+      });
+
+      gsap.to(maskRef.current, {
+        webkitMaskSize: `${MASK_SIZE}px`,
+        duration: 0.3,
+        ease: "expo.out",
+      });
+    },
+    { dependencies: [x, y], scope: maskRef },
+  );
 
   return (
     <>
-      <motion.div
-        ref={pointerRef}
-        className="cursor"
-        transformTemplate={template}
-        style={{
-          left: animatedPointer.x,
-          top: animatedPointer.y,
-          scaleX: pointerScale.x,
-          scaleY: pointerScale.y,
-        }}
-        animate={{
-          width: POINTER_SIZE,
-          height: POINTER_SIZE,
-        }}
-      />
+      <div ref={pointerRef} className="cursor" />
       <Header ref={burgerRef} />
-      <main className="main">
-        <p className="info">Hover the burger icon.</p>
+      <main className="main" ref={mainSectionRef}>
+        <div className="text-container">
+          <div ref={maskRef} className="mask">
+            <p
+              className="info"
+              onMouseEnter={() => setIsTextHovered(true)}
+              onMouseLeave={() => setIsTextHovered(false)}
+            >
+              This is another piece of text, which we will try to show
+              afterwards, then add some more.
+            </p>
+          </div>
+          <div>
+            <p className="info">
+              Hover the burger icon, then come back here, plus some addition
+              text to make this work.
+            </p>
+          </div>
+        </div>
       </main>
     </>
   );
