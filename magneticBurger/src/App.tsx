@@ -7,6 +7,7 @@ import { transform } from "./utils/utils";
 
 function App() {
   const { x, y } = useCursorLocation();
+  gsap.registerPlugin(useGSAP);
 
   const pointerRef = useRef<HTMLDivElement>(null);
   const burgerRef = useRef<HTMLDivElement>(null);
@@ -76,10 +77,10 @@ function App() {
         y: yP,
         scaleX,
         scaleY,
-        rotate: `${angle}rad`,
+        rotation: `${angle}rad`,
         width: POINTER_SIZE,
         height: POINTER_SIZE,
-        duration: 0.5,
+        duration: 0.3,
         ease: "expo",
       });
     },
@@ -88,23 +89,51 @@ function App() {
 
   useGSAP(
     () => {
+      if (window.navigator.userAgent.includes("Chrome")) return;
       const mainElement = mainSectionRef?.current;
       const topOffset = mainElement?.getBoundingClientRect().top ?? 0;
 
-      gsap.to(maskRef.current, {
-        webkitMaskPosition: `${x - MASK_SIZE / 2}px ${y - topOffset - MASK_SIZE / 2}px`,
-        duration: 0.5,
-        ease: "expo",
-      });
+      const updateMask = () => {
+        const maskElement = maskRef.current;
+        const maskPosition = `${x - MASK_SIZE / 2}px ${y - topOffset - MASK_SIZE / 2}px`;
 
-      gsap.to(maskRef.current, {
-        webkitMaskSize: `${MASK_SIZE}px`,
-        duration: 0.3,
-        ease: "expo.out",
-      });
+        gsap.to(maskElement, {
+          webkitMaskPosition: maskPosition,
+          duration: 0.5,
+          ease: "expo",
+        });
+
+        gsap.to(maskElement, {
+          webkitMaskSize: `${MASK_SIZE}px`,
+          duration: 0.3,
+          ease: "expo.out",
+        });
+      };
+
+      requestAnimationFrame(updateMask);
     },
     { dependencies: [x, y], scope: maskRef },
   );
+
+  // useGSAP(
+  //   () => {
+  //     const mainElement = mainSectionRef?.current;
+  //     const topOffset = mainElement?.getBoundingClientRect().top ?? 0;
+  //
+  //     gsap.to(maskRef.current, {
+  //       webkitMaskPosition: `${x - MASK_SIZE / 2}px ${y - topOffset - MASK_SIZE / 2}px`,
+  //       duration: 0.5,
+  //       ease: "expo",
+  //     });
+  //
+  //     gsap.to(maskRef.current, {
+  //       webkitMaskSize: `${MASK_SIZE}px`,
+  //       duration: 0.3,
+  //       ease: "expo.out",
+  //     });
+  //   },
+  //   { dependencies: [x, y], scope: maskRef },
+  // );
 
   return (
     <>

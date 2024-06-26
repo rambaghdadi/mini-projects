@@ -62,6 +62,7 @@ section {
   display: flex;
   align-items: center;
   justify-content: center;
+  will-change: mask-position, mask-size;
 }
 
 .cursor {
@@ -72,4 +73,5 @@ section {
   mix-blend-mode: difference;
   background-color: white;
   border-radius: 50%;
+  will-change: transform;
 }
