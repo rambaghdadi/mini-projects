@@ -50,6 +50,26 @@ function App() {
     setIsBurgerHovered(false);
   }
 
+  function animatePointer(
+    xP: number,
+    yP: number,
+    scaleX: number,
+    scaleY: number,
+    angle: number,
+  ) {
+    gsap.to(pointerRef.current, {
+      x: xP,
+      y: yP,
+      scaleX,
+      scaleY,
+      rotation: `${angle}rad`,
+      width: POINTER_SIZE,
+      height: POINTER_SIZE,
+      duration: 0.5,
+      ease: "expo",
+    });
+  }
+
   useGSAP(
     () => {
       let xP = x - POINTER_SIZE / 2;
@@ -71,69 +91,28 @@ function App() {
         xP = burgerX - POINTER_SIZE / 2 + distanceDiff.x * 0.1;
         yP = burgerY - POINTER_SIZE / 2 + distanceDiff.y * 0.1;
       }
-
-      gsap.to(pointerRef.current, {
-        x: xP,
-        y: yP,
-        scaleX,
-        scaleY,
-        rotation: `${angle}rad`,
-        width: POINTER_SIZE,
-        height: POINTER_SIZE,
-        duration: 0.3,
-        ease: "expo",
-      });
+      animatePointer(xP, yP, scaleX, scaleY, angle);
     },
     { scope: pointerRef, dependencies: [x, y] },
   );
 
   useGSAP(
     () => {
-      if (window.navigator.userAgent.includes("Chrome")) return;
       const mainElement = mainSectionRef?.current;
+      const maskElement = maskRef.current;
       const topOffset = mainElement?.getBoundingClientRect().top ?? 0;
-
-      const updateMask = () => {
-        const maskElement = maskRef.current;
-        const maskPosition = `${x - MASK_SIZE / 2}px ${y - topOffset - MASK_SIZE / 2}px`;
-
-        gsap.to(maskElement, {
-          webkitMaskPosition: maskPosition,
-          duration: 0.5,
-          ease: "expo",
-        });
-
-        gsap.to(maskElement, {
-          webkitMaskSize: `${MASK_SIZE}px`,
-          duration: 0.3,
-          ease: "expo.out",
-        });
-      };
-
-      requestAnimationFrame(updateMask);
+      gsap.to(maskElement, {
+        maskPosition: `${x - MASK_SIZE / 2}px ${y - topOffset - MASK_SIZE / 2}px`,
+        ease: "expo",
+        duration: 0.3,
+      });
+      gsap.to(maskElement, {
+        webkitMaskSize: `${MASK_SIZE}px`,
+        duration: 0.3,
+      });
     },
     { dependencies: [x, y], scope: maskRef },
   );
-
-  // useGSAP(
-  //   () => {
-  //     const mainElement = mainSectionRef?.current;
-  //     const topOffset = mainElement?.getBoundingClientRect().top ?? 0;
-  //
-  //     gsap.to(maskRef.current, {
-  //       webkitMaskPosition: `${x - MASK_SIZE / 2}px ${y - topOffset - MASK_SIZE / 2}px`,
-  //       duration: 0.5,
-  //       ease: "expo",
-  //     });
-  //
-  //     gsap.to(maskRef.current, {
-  //       webkitMaskSize: `${MASK_SIZE}px`,
-  //       duration: 0.3,
-  //       ease: "expo.out",
-  //     });
-  //   },
-  //   { dependencies: [x, y], scope: maskRef },
-  // );
 
   return (
     <>
