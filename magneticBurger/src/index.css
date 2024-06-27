@@ -19,11 +19,27 @@ body {
 
 section {
   min-height: 100vh;
+  display: grid;
+  place-content: center;
+
+  &>div {
+
+    max-width: 50rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+
+    &>p {
+      color: white;
+      font-size: 3rem;
+      opacity: 0.2;
+    }
+  }
+
 }
 
 .main {
   height: calc(100vh - 130px);
-  /* height: 100vh; */
   display: grid;
   place-items: center;
   position: relative;
@@ -41,7 +57,7 @@ section {
 
 .info {
   font-size: 2rem;
-  color: #afa18f;
+  color: #f3d654;
   max-width: 45rem;
   line-height: 1.2;
   cursor: default;

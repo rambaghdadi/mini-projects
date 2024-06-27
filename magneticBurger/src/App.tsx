@@ -4,6 +4,7 @@ import { useCursorLocation } from "./hooks/useCursorLocation";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { transform } from "./utils/utils";
+import { ScrollTrigger } from "gsap/all";
 
 function App() {
   const { x, y } = useCursorLocation();
@@ -114,6 +115,41 @@ function App() {
     { dependencies: [x, y], scope: maskRef },
   );
 
+  const opacityTextContainer = useRef<HTMLDivElement>(null);
+  let wordRefs = useRef<HTMLParagraphElement[]>([]);
+
+  useGSAP(
+    () => {
+      gsap.registerPlugin(ScrollTrigger);
+      gsap.to(wordRefs.current, {
+        scrollTrigger: {
+          trigger: opacityTextContainer.current,
+          scrub: true,
+          start: "-=200%",
+          end: "+=40%",
+        },
+        opacity: 1,
+        duration: 1,
+        stagger: 0.4,
+      });
+    },
+    { scope: wordRefs, dependencies: [] },
+  );
+
+  const phrase =
+    "This is a long text that I want to anmiate on scroll. Keep scrolling and you should see the opacity of the text increase if you scrolling down, while decrease if you scroll up.";
+
+  function splitToWords(phrase: string) {
+    if (!wordRefs.current) return;
+    const words = phrase.split(" ");
+    return words.map((word, i) => (
+      // @ts-ignore
+      <p ref={(r) => wordRefs.current.push(r)} key={word + i}>
+        {word}
+      </p>
+    ));
+  }
+
   return (
     <>
       <div ref={pointerRef} className="cursor" />
@@ -138,6 +174,10 @@ function App() {
           </div>
         </div>
       </main>
+      <section>
+        <div ref={opacityTextContainer}>{splitToWords(phrase)}</div>
+      </section>
+      <section></section>
     </>
   );
 }
